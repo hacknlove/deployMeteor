@@ -185,12 +185,13 @@ const expandConfigSSHs = function (configs) {
 const expandConfigHosts = function (configs) {
   var response = []
   configs.forEach(function (config) {
+    if (config.ssh.privateKey) {
+      config.ssh.privateKey = fs.readFileSync(config.ssh.privateKey, 'utf8')
+    } else {
+    }
     if (config.ssh.host.toLowerCase) {
       response.push(config)
       return
-    }
-    if (config.ssh.privateKey) {
-      config.ssh.privateKey = fs.readFileSync(config.ssh.privateKey, 'utf8')
     }
     config.ssh.host.forEach(function (host) {
       config = Object.assign({}, config)
