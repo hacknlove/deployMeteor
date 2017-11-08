@@ -284,10 +284,10 @@ const createScripts = function (config, i) {
       'echo docker run -d --restart=always --net=host --name ' + name +
       ' -v \\$bundle:/meteor' +
       ' -e ROOT_URL=' + config.root +
-      ' -e MONGO_URL=' + config.mongo.mongodb +
+      ' -e MONGO_URL=\\"' + config.mongo.mongodb + '\\"' +
       ' -e PORT=' + config.port +
       (config.forwarded !== undefined ? ' -e HTTP_FORWARDED_COUNT=' + config.forwarded : '') +
-      (config.mongo.oplog ? ' -e MONGO_OPLOG_URL=' + config.mongo.oplog : '') +
+      (config.mongo.oplog ? ' -e MONGO_OPLOG_URL=\\"' + config.mongo.oplog + '\\"' : '') +
       (config.bind ? ' -e BIND_IP=' + config.bind : '') +
       (config.settings ? " -e METEOR_SETTINGS=\\'" + config.settings + "\\'" : '') +
       ' ' + config.docker + ' > ' + path.join(config.path, config.name, 'start.' + config.port + '.sh'),
