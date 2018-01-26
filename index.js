@@ -37,11 +37,12 @@ const ssheasy = function (where, what, options, callback) {
     var command = what.shift()
     if (!command) {
       sshClient.end()
-      return callback(undefined, {data: data, err: err})
+      return callback(null, {data: data, err: err})
     }
     sshClient.exec(command, function (error, stream) {
       if (error) {
         sshClient.end()
+        // eslint-disable-next-line
         callback({line: i, command: command, err: err})
         callback = function () {}
         return
@@ -51,9 +52,9 @@ const ssheasy = function (where, what, options, callback) {
           return helper()
         }
         sshClient.end()
+        // eslint-disable-next-line
         callback({line: i, command: command, commands: what, err: err, data: data})
         callback = function () {}
-        return
       }).on('data', function (response) {
         data.push(response.toString())
       }).stderr.on('data', function (response) {
@@ -281,18 +282,19 @@ const createScripts = function (config, i) {
     console.log('', i, config.port, ': creating scripts for port')
     var name = config.name + '.' + config.port
     ssheasy(config.ssh, [
-      'echo docker run -d --restart=always --net=host --name ' + name +
-      ' -v \\$bundle:/meteor' +
-      ' -e ROOT_URL=' + config.root +
-      ' -e MONGO_URL=\\"' + config.mongo.mongodb + '\\"' +
-      ' -e PORT=' + config.port +
-      (config.forwarded !== undefined ? ' -e HTTP_FORWARDED_COUNT=' + config.forwarded : '') +
-      (config.mongo.oplog ? ' -e MONGO_OPLOG_URL=\\"' + config.mongo.oplog + '\\"' : '') +
+      `
+echo docker run -d --restart=always --net=host --name ${name} \
+  -v \\$bundle:/meteor \
+  -e ROOT_URL=${config.root} \
+  -e MONGO_URL=\\"${config.mongo.mongodb}\\" \
+  -e MONGO_OPLOG_URL=\\"${config.mongo.oplog}" \
+  -e PORT=${config.port} \
+  ${(config.forwarded !== undefined ? `-e HTTP_FORWARDED_COUNT=${config.forwarded}` : '')}
       (config.bind ? ' -e BIND_IP=' + config.bind : '') +
       (config.settings ? " -e METEOR_SETTINGS=\\'" + config.settings + "\\'" : '') +
       ' ' + config.docker + ' > ' + path.join(config.path, config.name, 'start.' + config.port + '.sh'),
       'echo "docker stop ' + name + '; docker rm ' + name + '" > ' + path.join(config.path, config.name, 'stop.' + config.port + '.sh'),
-      'chmod u+x ' + path.join(config.path, config.name, '*.sh')
+      'chmod u+x ' + path.join(config.path, config.name, '*.sh')`
     ], function (err, data) {
       if (err) {
         return console.log('', i, config.port, ': error creating scripts', '\n', yaml.safeDump(config), '\n', yaml.safeDump(err))
