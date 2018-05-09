@@ -269,7 +269,7 @@ const untar = function (config, i) {
   console.log('', i, ': uncompressing')
 
   ssheasy(config.ssh, [
-    'cd ' + to + '; tar -zxvf bundle.tar.gz; rm bundle.tar.gz'
+    'cd ' + to + '; tar -zxvf bundle.tar.gz > /dev/null 2>&1; rm bundle.tar.gz'
   ], function (err, data) {
     if (err) {
       return console.log('', i, ': error uncompressing', '\n', yaml.safeDump(config), '\n', yaml.safeDump(err))
