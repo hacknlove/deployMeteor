@@ -221,13 +221,17 @@ const checkConfig = function (configs) {
 
 const checkSSH = function (config, i) {
   console.log('', i, ': checking server')
-  ssheasy(config.ssh, [
+  const pasos = [
     'cd ' + config.path,
     'touch ' + path.join(config.path, 'testWritable'),
-    'rm ' + path.join(config.path, 'testWritable'),
-    'docker pull ' + config.docker
-  ], function (err, data) {
+    'rm ' + path.join(config.path, 'testWritable')
+  ]
+  if (!config.dockerNoPull) {
+    pasos.push('docker pull ' + config.docker)
+  }
+  ssheasy(config.ssh, pasos, function (err, data) {
     if (err) {
+      console.log(err)
       return console.log('', i, ': error in server\'s checks', '\n', yaml.safeDump(config), '\n', yaml.safeDump(err))
     }
     backup(config, i)
@@ -246,6 +250,7 @@ const backup = function (config, i) {
     'mkdir ' + from
   ], function (err, data) {
     if (err) {
+      console.log(err)
       return console.log('', i, ': error backuping', '\n', yaml.safeDump(config), '\n', yaml.safeDump(err))
     }
     upload(config, i)
